@@ -29,8 +29,8 @@ export function RegisterPage() {
 
   const onSubmit = async () => {
     if (!email || !password) return
-    if (password.length < 8) {
-      setLocalError('Password must be at least 8 characters.')
+    if (password.length < 10) {
+      setLocalError('Password must be at least 10 characters.')
       return
     }
     setLocalError(null)
@@ -123,7 +123,7 @@ export function RegisterPage() {
               />
             </div>
             <p className="text-xs font-medium text-[#44403C] dark:text-[#D6D3D1]">
-              Must be at least 8 characters
+              Must be at least 10 characters
             </p>
           </div>
 

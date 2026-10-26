@@ -21,6 +21,7 @@ import {
   type AdminLimitsResponse,
   type AdminAssessmentItem,
 } from '../../services/adminService'
+import { extractApiErrorMessage } from '../../utils/errorMessages'
 
 export function AdminDashboard() {
   const { theme } = useTheme()
@@ -136,9 +137,7 @@ export function AdminDashboard() {
       }
     } catch (err: unknown) {
       setErrorMessage(
-        err instanceof Error
-          ? err.message
-          : 'Failed to load administrator telemetry data from backend.',
+        extractApiErrorMessage(err, 'Failed to load administrator telemetry data from backend.'),
       )
     } finally {
       setIsLoading(false)
@@ -170,7 +169,7 @@ export function AdminDashboard() {
       setTimeout(() => setReloadSuccess(null), 5000)
     } catch (err: unknown) {
       setErrorMessage(
-        err instanceof Error ? err.message : 'Vision model reload request failed.',
+        extractApiErrorMessage(err, 'Vision model reload request failed.'),
       )
     } finally {
       setIsReloadingModel(false)

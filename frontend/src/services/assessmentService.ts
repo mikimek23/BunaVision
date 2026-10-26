@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { env } from '../config/env'
+import { normalizeError } from './apiClient'
 import type {
   BackendAssessment,
   BackendCompletedAssessment,
@@ -108,21 +109,25 @@ export async function uploadAssessmentToBackend(
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  const response = await axios.post<BackendCompletedAssessment>(
-    `${API_BASE}/assessments`,
-    formData,
-    { headers, timeout: 35000 },
-  )
+  try {
+    const response = await axios.post<BackendCompletedAssessment>(
+      `${API_BASE}/assessments`,
+      formData,
+      { headers, timeout: 35000 },
+    )
 
-  const previewFallback = URL.createObjectURL(file)
-  return mapBackendToUnified(response.data, {
-    station_id: options?.station_id,
-    lot_number: options?.lot_number,
-    moisture_level: options?.moisture_level,
-    varietal: options?.varietal,
-    notes: options?.notes,
-    fallbackImageUrl: previewFallback,
-  })
+    const previewFallback = URL.createObjectURL(file)
+    return mapBackendToUnified(response.data, {
+      station_id: options?.station_id,
+      lot_number: options?.lot_number,
+      moisture_level: options?.moisture_level,
+      varietal: options?.varietal,
+      notes: options?.notes,
+      fallbackImageUrl: previewFallback,
+    })
+  } catch (err) {
+    throw normalizeError(err)
+  }
 }
 
 /**
@@ -139,12 +144,16 @@ export async function fetchAssessmentsFromBackend(
   const headers: Record<string, string> = {}
   if (token) headers['Authorization'] = `Bearer ${token}`
 
-  const response = await axios.get<BackendAssessmentListResponse>(`${API_BASE}/assessments`, {
-    params,
-    headers,
-    timeout: 10000,
-  })
-  return response.data
+  try {
+    const response = await axios.get<BackendAssessmentListResponse>(`${API_BASE}/assessments`, {
+      params,
+      headers,
+      timeout: 10000,
+    })
+    return response.data
+  } catch (err) {
+    throw normalizeError(err)
+  }
 }
 
 /**
@@ -157,9 +166,13 @@ export async function fetchAssessmentByIdFromBackend(
   const headers: Record<string, string> = {}
   if (token) headers['Authorization'] = `Bearer ${token}`
 
-  const response = await axios.get<BackendAssessment>(
-    `${API_BASE}/assessments/${encodeURIComponent(id)}`,
-    { headers, timeout: 10000 },
-  )
-  return response.data
+  try {
+    const response = await axios.get<BackendAssessment>(
+      `${API_BASE}/assessments/${encodeURIComponent(id)}`,
+      { headers, timeout: 10000 },
+    )
+    return response.data
+  } catch (err) {
+    throw normalizeError(err)
+  }
 }
