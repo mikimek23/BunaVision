@@ -3,7 +3,6 @@ import { Link, NavLink, useNavigate } from 'react-router'
 import {
   Sun,
   Moon,
-  Layers,
   Menu,
   X,
   LogIn,
@@ -50,9 +49,11 @@ export function Header() {
           to="/"
           className="flex items-center space-x-3 select-none group shrink-0 no-underline"
         >
-          <div className="w-9 h-9 rounded-xl bg-[#593D2B] group-hover:bg-[#483020] transition-colors flex items-center justify-center shadow-xs">
-            <Layers className="w-5 h-5 text-[#8BA470]" />
-          </div>
+          <img
+            src="/bunavision-favicon.ico"
+            alt="BunaVision Logo"
+            className="w-9 h-9 rounded-xl shadow-xs object-cover group-hover:scale-105 transition-transform"
+          />
           <div className="flex items-baseline space-x-2">
             <span className="font-extrabold text-xl tracking-tight font-serif text-[#382416] dark:text-[#F9F7F2]">
               BunaVision

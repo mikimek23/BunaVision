@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router'
-import { ArrowLeft, Mail, Lock, RefreshCw, UserPlus, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Mail, Lock, RefreshCw, AlertTriangle, UserPlus } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -14,16 +14,14 @@ export function RegisterPage() {
   const [password, setPassword] = useState('')
   const [localError, setLocalError] = useState<string | null>(null)
 
-  const card = `rounded-2xl border transition-all ${
-    theme === 'dark'
+  const card = `rounded-2xl border transition-all ${theme === 'dark'
       ? 'bg-[#231F1C] border-[#382E26] shadow-sm'
       : 'bg-white border-[#E2D9CF] shadow-xs'
-  }`
-  const inputCls = `w-full px-3.5 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-[#8BA470] transition-colors ${
-    theme === 'dark'
+    }`
+  const inputCls = `w-full px-3.5 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-[#8BA470] transition-colors ${theme === 'dark'
       ? 'bg-[#181513] border-[#382E26] text-[#F9F7F2]'
       : 'bg-[#FAF8F5] border-[#E2D9CF] text-[#1C1917]'
-  }`
+    }`
 
   const redirectPath = (location.state as { from?: string })?.from || '/assess'
 
@@ -58,9 +56,11 @@ export function RegisterPage() {
       </Link>
 
       <div className="text-center space-y-3">
-        <div className="w-14 h-14 rounded-2xl bg-[#593D2B] mx-auto flex items-center justify-center shadow-xs">
-          <UserPlus className="w-7 h-7 text-[#8BA470]" />
-        </div>
+        <img
+          src="/bunavision-favicon.ico"
+          alt="BunaVision Logo"
+          className="w-16 h-16 rounded-2xl mx-auto shadow-md object-cover border border-[#E2D9CF] dark:border-[#382E26]"
+        />
         <div>
           <h1 className="text-2xl font-bold font-serif text-[#382416] dark:text-[#F9F7F2]">
             Create your account

@@ -179,8 +179,25 @@ export interface Assessment {
   detection_count?: number
 }
 
+export interface AssessmentListItem {
+  assessment_id: string
+  status: AssessmentStatus
+  created_at: string
+  model_version?: string
+  detection_count?: number
+  primary_detection_count?: number
+  secondary_detection_count?: number
+  error_code?: ErrorCode | null
+  completed_at?: string | null
+  summary?: AssessmentSummary
+  predictions?: Prediction[]
+  original_image_url?: string | null
+  annotated_image_url?: string | null
+  limitations?: string[]
+}
+
 export interface AssessmentListResponse {
-  items: Assessment[]
+  items: AssessmentListItem[]
   next_cursor: string | null
 }
 
