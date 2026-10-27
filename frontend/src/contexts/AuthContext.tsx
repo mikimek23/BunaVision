@@ -8,7 +8,7 @@ import {
 } from 'react'
 import type { UserOut } from '../types/auth'
 import { loginUser, registerUser, fetchCurrentUser } from '../services/authService'
-import { DEMO_USER, DEMO_ADMIN, loadDemoData } from '../services/demoService'
+import { DEMO_USER, DEMO_ADMIN } from '../services/demoService'
 import { extractApiErrorMessage } from '../utils/errorMessages'
 
 interface AuthContextValue {
@@ -46,6 +46,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   // Validate stored token on mount
   useEffect(() => {
+    // Purge any legacy demo data from browser storage
+    localStorage.removeItem('bv_demo_assessments_store')
+
     const token = localStorage.getItem('bv_token')
     if (!token) {
       setAuthLoading(false)
@@ -131,9 +134,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
     localStorage.setItem('bv_demo_user', JSON.stringify(demoUser))
     setAuthToken(token)
     setCurrentUser(demoUser)
-    if (role === 'user') {
-      loadDemoData()
-    }
   }, [])
 
   const handleLogout = useCallback(() => {

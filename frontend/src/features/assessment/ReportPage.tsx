@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router'
+import { useParams, Link } from 'react-router'
 import {
   ArrowLeft,
   Upload,
@@ -8,7 +8,6 @@ import {
   Sparkles,
   Info,
   ShieldCheck,
-  Trash2,
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -17,10 +16,6 @@ import {
   fetchAssessmentByIdFromBackend,
   mapBackendToUnified,
 } from '../../services/assessmentService'
-import {
-  getDemoAssessmentById,
-  deleteDemoData,
-} from '../../services/demoService'
 import type { UnifiedAssessment, BackendCompletedAssessment } from '../../types/assessment'
 import { extractApiErrorMessage, getErrorMessage } from '../../utils/errorMessages'
 
@@ -28,7 +23,6 @@ export function ReportPage() {
   const { id } = useParams<{ id: string }>()
   const { theme } = useTheme()
   const { authToken } = useAuth()
-  const navigate = useNavigate()
 
   const [assessment, setAssessment] = useState<UnifiedAssessment | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -66,17 +60,7 @@ export function ReportPage() {
         return
       }
 
-      // 2. Check stored demo assessments
-      const demoItem = getDemoAssessmentById(id)
-      if (demoItem) {
-        if (isMounted) {
-          setAssessment(demoItem)
-          setIsLoading(false)
-        }
-        return
-      }
-
-      // 3. Fetch directly from the real backend API
+      // 2. Fetch directly from the real backend API
       try {
         const remote = await fetchAssessmentByIdFromBackend(id, authToken ?? undefined)
         if (!isMounted) return
@@ -107,11 +91,6 @@ export function ReportPage() {
       isMounted = false
     }
   }, [id, authToken])
-
-  const handleDeleteDemo = () => {
-    deleteDemoData()
-    navigate('/assessments')
-  }
 
   if (isLoading) {
     return (
@@ -202,25 +181,7 @@ export function ReportPage() {
         </div>
       </div>
 
-      {/* ── Demo Notice Banner ── */}
-      {assessment.assessment_id.startsWith('BV-DEMO-') && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-200">
-          <div className="flex items-center gap-2.5">
-            <Sparkles className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
-            <p className="text-xs font-semibold">
-              You are viewing an interactive demo green coffee screening report.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={handleDeleteDemo}
-            className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs shrink-0"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Delete Demo Data</span>
-          </button>
-        </div>
-      )}
+
 
       {/* ── 4 Real Summary Metric Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -421,7 +382,7 @@ export function ReportPage() {
             <div className="flex items-center space-x-2.5">
               <Sparkles className="w-5 h-5 text-[#593D2B] dark:text-[#8BA470]" />
               <h3 className="font-bold text-base font-serif text-[#382416] dark:text-[#F9F7F2]">
-                Gemini Advisory ({assessment.advisory.generator_model})
+                Report
               </h3>
             </div>
 

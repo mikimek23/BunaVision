@@ -257,6 +257,16 @@ export const rawAxiosClient: AxiosInstance = axios.create({
   },
 })
 
+rawAxiosClient.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('bv_token')
+    if (token && !token.startsWith('demo_token_') && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+  }
+  return config
+})
+
 export interface RequestOptions<T> extends AxiosRequestConfig {
   schema?: ZodType<T>
 }
