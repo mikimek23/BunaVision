@@ -15,12 +15,12 @@ export function RegisterPage() {
   const [localError, setLocalError] = useState<string | null>(null)
 
   const card = `rounded-2xl border transition-all ${theme === 'dark'
-      ? 'bg-[#231F1C] border-[#382E26] shadow-sm'
-      : 'bg-white border-[#E2D9CF] shadow-xs'
+    ? 'bg-[#231F1C] border-[#382E26] shadow-sm'
+    : 'bg-white border-[#E2D9CF] shadow-xs'
     }`
   const inputCls = `w-full px-3.5 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-[#8BA470] transition-colors ${theme === 'dark'
-      ? 'bg-[#181513] border-[#382E26] text-[#F9F7F2]'
-      : 'bg-[#FAF8F5] border-[#E2D9CF] text-[#1C1917]'
+    ? 'bg-[#181513] border-[#382E26] text-[#F9F7F2]'
+    : 'bg-[#FAF8F5] border-[#E2D9CF] text-[#1C1917]'
     }`
 
   const redirectPath = (location.state as { from?: string })?.from || '/assess'

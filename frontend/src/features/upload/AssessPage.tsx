@@ -37,11 +37,10 @@ export function AssessPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [cameraOpen, setCameraOpen] = useState(false)
 
-  const card = `rounded-2xl border transition-all ${
-    theme === 'dark'
+  const card = `rounded-2xl border transition-all ${theme === 'dark'
       ? 'bg-[#231F1C] border-[#382E26] shadow-sm'
       : 'bg-white border-[#E2D9CF] shadow-xs'
-  }`
+    }`
 
   const handleFileInput = (file: File) => {
     if (file.size > env.maxUploadMb * 1024 * 1024) {
@@ -161,11 +160,10 @@ export function AssessPage() {
               <button
                 type="button"
                 onClick={() => setCameraOpen(true)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 cursor-pointer transition-colors ${
-                  theme === 'dark'
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 cursor-pointer transition-colors ${theme === 'dark'
                     ? 'bg-[#181513] border-[#382E26] text-[#D6D3D1] hover:bg-[#2C2723]'
                     : 'bg-[#FAF8F5] border-[#E2D9CF] text-[#44403C] hover:bg-stone-100'
-                }`}
+                  }`}
               >
                 <Camera className="w-3.5 h-3.5 text-[#593D2B] dark:text-[#8BA470]" />
                 <span>Device Camera</span>
@@ -180,13 +178,12 @@ export function AssessPage() {
                 const file = e.dataTransfer.files[0]
                 if (file) handleFileInput(file)
               }}
-              className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer ${
-                previewUrl
+              className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer ${previewUrl
                   ? 'border-[#8BA470] bg-[#8BA470]/5'
                   : theme === 'dark'
                     ? 'border-[#382E26] hover:border-[#8BA470]/50 bg-[#181513]/50'
                     : 'border-[#D1C7BD] hover:border-[#8BA470] bg-[#FAF8F5]'
-              }`}
+                }`}
             >
               <input
                 type="file"
@@ -244,18 +241,13 @@ export function AssessPage() {
                     key={preset.id}
                     type="button"
                     onClick={() => handleSelectPreset(preset)}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                      previewUrl === preset.url
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${previewUrl === preset.url
                         ? 'border-[#8BA470] bg-[#8BA470]/10 text-[#1C1917] dark:text-[#F9F7F2]'
                         : theme === 'dark'
                           ? 'bg-[#181513] border-[#382E26] text-[#D6D3D1] hover:border-[#593D2B]'
                           : 'bg-[#FAF8F5] border-[#E2D9CF] text-[#44403C] hover:border-[#D1C7BD]'
-                    }`}
+                      }`}
                   >
-                    <div className="text-xs font-bold truncate">{preset.name}</div>
-                    <div className="text-xs text-[#44403C] dark:text-[#D6D3D1] truncate mt-0.5">
-                      {preset.station}
-                    </div>
                   </button>
                 ))}
               </div>
@@ -268,11 +260,10 @@ export function AssessPage() {
               type="button"
               disabled={isProcessing || !previewUrl}
               onClick={handleStartAnalysis}
-              className={`w-full py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer ${
-                !previewUrl || isProcessing
+              className={`w-full py-3.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer ${!previewUrl || isProcessing
                   ? 'bg-stone-300 dark:bg-stone-800 text-stone-500 cursor-not-allowed'
                   : 'bg-[#593D2B] hover:bg-[#483020] text-white hover:scale-[1.005]'
-              }`}
+                }`}
             >
               {isProcessing ? (
                 <>
