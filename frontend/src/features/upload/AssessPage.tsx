@@ -12,6 +12,8 @@ import { CameraModal } from '../../components/CameraModal'
 import { PRESET_SAMPLES } from '../../constants/data'
 import type { PresetSample, UnifiedAssessment } from '../../types/app'
 import { uploadAssessmentToBackend } from '../../services/assessmentService'
+import { extractApiErrorMessage } from '../../utils/errorMessages'
+import { env } from '../../config/env'
 
 // Store assessments in memory for this session
 let sessionAssessments: UnifiedAssessment[] = []
@@ -42,6 +44,12 @@ export function AssessPage() {
   }`
 
   const handleFileInput = (file: File) => {
+    if (file.size > env.maxUploadMb * 1024 * 1024) {
+      setErrorMessage(`This image is larger than ${env.maxUploadMb} MB. Please select a smaller photo.`)
+      setSelectedFile(null)
+      setPreviewUrl(null)
+      return
+    }
     setSelectedFile(file)
     setPreviewUrl(URL.createObjectURL(file))
     setErrorMessage(null)
@@ -106,10 +114,10 @@ export function AssessPage() {
       setIsProcessing(false)
       setProcessingProgress(0)
       setProcessingStep('')
-      const msg =
-        err instanceof Error
-          ? err.message
-          : 'Backend assessment request failed. Please check network connectivity and backend service status.'
+      const msg = extractApiErrorMessage(
+        err,
+        'Backend assessment request failed. Please check network connectivity and backend service status.',
+      )
       setErrorMessage(msg)
     }
   }

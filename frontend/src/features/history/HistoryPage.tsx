@@ -19,6 +19,7 @@ import {
   loadDemoData,
   hasDemoData,
 } from '../../services/demoService'
+import { extractApiErrorMessage } from '../../utils/errorMessages'
 
 interface HistoryRow {
   assessment_id: string
@@ -184,7 +185,7 @@ export function HistoryPage() {
           <div className="flex items-center gap-2.5">
             <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
             <p className="text-xs font-medium text-amber-950 dark:text-amber-200">
-              Backend sync: {remoteError.message}
+              Backend sync: {extractApiErrorMessage(remoteError, remoteError.message)}
             </p>
           </div>
           <button

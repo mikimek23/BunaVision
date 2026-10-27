@@ -1,23 +1,13 @@
 import { z } from 'zod'
 
-export const errorCodeSchema = z.enum([
-  'INVALID_IMAGE',
-  'IMAGE_TOO_LARGE',
-  'UNSUPPORTED_FORMAT',
-  'INFERENCE_FAILED',
-  'ASSESSMENT_NOT_FOUND',
-  'UNAUTHORIZED',
-  'RATE_LIMITED',
-  'INTERNAL_ERROR',
-  'NETWORK_ERROR',
-  'TIMEOUT',
-  'INVALID_RESPONSE',
-])
+export const errorCodeSchema = z.string()
 
 export const apiErrorBodySchema = z.object({
   error: z.object({
     code: errorCodeSchema,
     message: z.string(),
+    request_id: z.string().nullable().optional(),
+    assessment_id: z.string().nullable().optional(),
     details: z.unknown().optional(),
   }),
 })

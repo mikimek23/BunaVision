@@ -22,6 +22,7 @@ import {
   deleteDemoData,
 } from '../../services/demoService'
 import type { UnifiedAssessment, BackendCompletedAssessment } from '../../types/assessment'
+import { extractApiErrorMessage, getErrorMessage } from '../../utils/errorMessages'
 
 export function ReportPage() {
   const { id } = useParams<{ id: string }>()
@@ -84,16 +85,17 @@ export function ReportPage() {
           const unified = mapBackendToUnified(remote as BackendCompletedAssessment)
           setAssessment(unified)
         } else {
+          const failMsg = remote.error_code ? getErrorMessage(remote.error_code).message : null
           setErrorMessage(
-            `Assessment failed during processing with error code: ${remote.error_code || 'PROCESSING_FAILED'}.`,
+            failMsg || `Assessment failed during processing (${remote.error_code || 'PROCESSING_FAILED'}).`,
           )
         }
       } catch (err: unknown) {
         if (!isMounted) return
-        const msg =
-          err instanceof Error
-            ? err.message
-            : 'Failed to retrieve assessment data from backend service.'
+        const msg = extractApiErrorMessage(
+          err,
+          'Failed to retrieve assessment data from backend service.',
+        )
         setErrorMessage(msg)
       } finally {
         if (isMounted) setIsLoading(false)
