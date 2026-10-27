@@ -6,11 +6,9 @@ import {
   Lock,
   RefreshCw,
   LogIn,
-  Layers,
   AlertTriangle,
   User,
   Shield,
-  Sparkles,
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useAuth } from '../../contexts/AuthContext'
