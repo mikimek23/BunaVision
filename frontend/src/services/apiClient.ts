@@ -131,16 +131,17 @@ export function normalizeError(error: unknown): ApiError {
     if (
       typeof responseData === 'object' &&
       responseData !== null &&
-      'message' in responseData &&
-      typeof (responseData as Record<string, unknown>).message === 'string' &&
-      (responseData as Record<string, unknown>).message.trim()
+      'message' in responseData
     ) {
-      return new ApiError({
-        code: 'INTERNAL_ERROR',
-        message: (responseData as Record<string, unknown>).message.trim(),
-        httpStatus: status,
-        details: responseData,
-      })
+      const rawMessage = (responseData as Record<string, unknown>).message
+      if (typeof rawMessage === 'string' && rawMessage.trim()) {
+        return new ApiError({
+          code: 'INTERNAL_ERROR',
+          message: rawMessage.trim(),
+          httpStatus: status,
+          details: responseData,
+        })
+      }
     }
 
     // 5. Map common HTTP status codes
