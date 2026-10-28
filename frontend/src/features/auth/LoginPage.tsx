@@ -14,27 +14,26 @@ import {
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useAuth } from '../../contexts/AuthContext'
+import { env } from '../../config/env'
 
 export function LoginPage() {
   const { theme } = useTheme()
-  const { handleLogin, loginError, loginLoading, loginAsDemo } = useAuth()
+  const { handleLogin, loginError, loginLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const card = `rounded-2xl border transition-all ${
-    theme === 'dark'
+  const card = `rounded-2xl border transition-all ${theme === 'dark'
       ? 'bg-[#231F1C] border-[#382E26] shadow-sm'
       : 'bg-white border-[#E2D9CF] shadow-xs'
-  }`
+    }`
 
-  const inputCls = `w-full px-3.5 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-[#8BA470] transition-colors ${
-    theme === 'dark'
+  const inputCls = `w-full px-3.5 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-[#8BA470] transition-colors ${theme === 'dark'
       ? 'bg-[#181513] border-[#382E26] text-[#F9F7F2]'
       : 'bg-[#FAF8F5] border-[#E2D9CF] text-[#1C1917]'
-  }`
+    }`
 
   const redirectPath = (location.state as { from?: string })?.from || '/assess'
 
@@ -51,14 +50,20 @@ export function LoginPage() {
     }
   }
 
-  const handleDemoSignIn = (role: 'user' | 'admin') => {
-    loginAsDemo(role)
-    if (role === 'admin') {
-      navigate('/admin')
-    } else {
-      navigate(redirectPath)
+  const handleDemoSignIn = async (role: 'user' | 'admin') => {
+    const targetEmail = role === 'admin' ? env.demoAdminEmail : env.demoUserEmail
+    const targetPassword = role === 'admin' ? env.demoAdminPassword : env.demoUserPassword
+    setEmail(targetEmail)
+    setPassword(targetPassword)
+    try {
+      await handleLogin(targetEmail, targetPassword)
+      setEmail('')
+      setPassword('')
+      navigate(role === 'admin' ? '/admin' : redirectPath)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch {
+      // Error is handled by context
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
@@ -72,9 +77,11 @@ export function LoginPage() {
       </Link>
 
       <div className="text-center space-y-3">
-        <div className="w-14 h-14 rounded-2xl bg-[#593D2B] mx-auto flex items-center justify-center shadow-xs">
-          <Layers className="w-7 h-7 text-[#8BA470]" />
-        </div>
+        <img
+          src="/bunavision-favicon.ico"
+          alt="BunaVision Logo"
+          className="w-16 h-16 rounded-2xl mx-auto shadow-md object-cover border border-[#E2D9CF] dark:border-[#382E26]"
+        />
         <div>
           <h1 className="text-2xl font-bold font-serif text-[#382416] dark:text-[#F9F7F2]">
             Welcome back
@@ -162,31 +169,32 @@ export function LoginPage() {
           </Link>
         </div>
 
-        {/* Demo Users Section for UI/UX Evaluation */}
+        {/* Demo Users Section */}
         <div className="pt-4 border-t border-[#E2D9CF] dark:border-[#382E26] space-y-3">
           <div className="flex items-center gap-1.5 justify-center text-xs font-bold text-[#593D2B] dark:text-[#A7BF8C] uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Interactive Demo Accounts</span>
+            <span>Demo Accounts</span>
           </div>
           <p className="text-xs text-center text-[#44403C] dark:text-[#D6D3D1]">
-            One-click sign in with preloaded sample data for testing the UI/UX. Easily deletable at any time.
+            Quick sign-in using demo credentials.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
             <button
               type="button"
+              disabled={loginLoading}
               onClick={() => handleDemoSignIn('user')}
-              className="px-3 py-2.5 rounded-xl border border-[#8BA470]/40 bg-[#8BA470]/10 hover:bg-[#8BA470]/20 text-[#3A5228] dark:text-[#B5CF97] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              className="px-3 py-2.5 rounded-xl border border-[#8BA470]/40 bg-[#8BA470]/10 hover:bg-[#8BA470]/20 text-[#3A5228] dark:text-[#B5CF97] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
             >
               <User className="w-3.5 h-3.5" />
-              <span>Demo User (Producer)</span>
+              <span>Demo User</span>
             </button>
             <button
               type="button"
+              disabled={loginLoading}
               onClick={() => handleDemoSignIn('admin')}
-              className="px-3 py-2.5 rounded-xl border border-[#593D2B]/30 bg-[#593D2B]/10 hover:bg-[#593D2B]/20 text-[#382416] dark:text-[#D6D3D1] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              className="px-3 py-2.5 rounded-xl border border-[#593D2B]/30 bg-[#593D2B]/10 hover:bg-[#593D2B]/20 text-[#382416] dark:text-[#D6D3D1] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
             >
               <Shield className="w-3.5 h-3.5 text-[#593D2B] dark:text-[#8BA470]" />
-              <span>Demo Admin (Inspector)</span>
+              <span>Demo Admin</span>
             </button>
           </div>
         </div>

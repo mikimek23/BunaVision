@@ -132,6 +132,7 @@ export const INITIAL_DEMO_ASSESSMENTS: UnifiedAssessment[] = [
     created_at: new Date(Date.now() - 3600 * 1000 * 24).toISOString(),
     processing_time_ms: 1110,
     summary: {
+
       detection_count: 6,
       primary_detection_count: 2,
       secondary_detection_count: 4,

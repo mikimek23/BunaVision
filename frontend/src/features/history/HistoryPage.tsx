@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router'
 import {
   Upload,
@@ -7,18 +7,11 @@ import {
   Clock,
   ChevronRight,
   AlertTriangle,
-  Sparkles,
-  Trash2,
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { getSessionAssessments } from '../upload/AssessPage'
 import { useAssessments } from '../../hooks/useAssessments'
-import {
-  getDemoAssessments,
-  deleteDemoData,
-  loadDemoData,
-  hasDemoData,
-} from '../../services/demoService'
+import { extractApiErrorMessage } from '../../utils/errorMessages'
 
 interface HistoryRow {
   assessment_id: string
@@ -27,26 +20,18 @@ interface HistoryRow {
   detection_count?: number
   status: 'completed' | 'failed' | 'processing'
   error_code?: string
-  isDemo?: boolean
 }
 
 export function HistoryPage() {
   const { theme } = useTheme()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'failed'>('all')
-  const [, setDemoStateToken] = useState(0)
 
   const [cursors, setCursors] = useState<(string | null)[]>([null])
   const [page, setPage] = useState(0)
 
   const { data: remoteData, isLoading: remoteLoading, error: remoteError, isFetching, refetch } =
     useAssessments(cursors[page])
-
-  useEffect(() => {
-    const handleDemoUpdate = () => setDemoStateToken((c) => c + 1)
-    window.addEventListener('bv_demo_data_changed', handleDemoUpdate)
-    return () => window.removeEventListener('bv_demo_data_changed', handleDemoUpdate)
-  }, [])
 
   const card = `rounded-2xl border transition-all ${
     theme === 'dark'
@@ -70,15 +55,6 @@ export function HistoryPage() {
     error_code: a.error_code ?? undefined,
   }))
 
-  const demoItems: HistoryRow[] = getDemoAssessments().map((a) => ({
-    assessment_id: a.assessment_id,
-    model_version: a.model_version,
-    created_at: a.created_at,
-    detection_count: a.summary.detection_count,
-    status: a.status as 'completed' | 'failed' | 'processing',
-    isDemo: true,
-  }))
-
   const remoteItems: HistoryRow[] =
     remoteData?.items?.map((item) => ({
       assessment_id: item.assessment_id,
@@ -89,14 +65,12 @@ export function HistoryPage() {
       error_code: item.error_code ?? undefined,
     })) ?? []
 
-  // Combine unique by assessment_id: remote items take priority, followed by session, followed by demo
+  // Combine unique by assessment_id: remote items take priority, followed by session
   const combinedMap = new Map<string, HistoryRow>()
-  demoItems.forEach((item) => combinedMap.set(item.assessment_id, item))
   sessionItems.forEach((item) => combinedMap.set(item.assessment_id, item))
   remoteItems.forEach((item) => combinedMap.set(item.assessment_id, item))
 
   const allItems = Array.from(combinedMap.values())
-  const demoIsActive = hasDemoData() && demoItems.length > 0
 
   // Apply search & status filters
   const filteredItems = allItems.filter((item) => {
@@ -184,7 +158,7 @@ export function HistoryPage() {
           <div className="flex items-center gap-2.5">
             <AlertTriangle className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
             <p className="text-xs font-medium text-amber-950 dark:text-amber-200">
-              Backend sync: {remoteError.message}
+              Backend sync: {extractApiErrorMessage(remoteError, remoteError.message)}
             </p>
           </div>
           <button
@@ -198,25 +172,6 @@ export function HistoryPage() {
       )}
 
       {/* ── Demo Active Notification Banner ── */}
-      {demoIsActive && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-200">
-          <div className="flex items-center gap-2.5">
-            <Sparkles className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
-            <p className="text-xs font-semibold">
-              Demo sample assessments are active for UI/UX preview. You can delete them cleanly anytime.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => deleteDemoData()}
-            className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs shrink-0"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Delete Demo Data</span>
-          </button>
-        </div>
-      )}
-
       {/* ── Table Card ── */}
       <div className={`p-6 sm:p-7 ${card} overflow-hidden`}>
         {remoteLoading && allItems.length === 0 ? (
@@ -245,14 +200,6 @@ export function HistoryPage() {
                 <Upload className="w-3.5 h-3.5" />
                 <span>Start First Assessment</span>
               </Link>
-              <button
-                type="button"
-                onClick={() => loadDemoData()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#8BA470]/50 bg-[#8BA470]/15 hover:bg-[#8BA470]/25 text-[#3A5228] dark:text-[#B5CF97] text-xs font-bold transition-colors cursor-pointer"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Load Demo Data (Preview)</span>
-              </button>
             </div>
           </div>
         ) : (
@@ -282,11 +229,6 @@ export function HistoryPage() {
                         >
                           {item.assessment_id}
                         </Link>
-                        {item.isDemo && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-500/20 text-amber-800 dark:text-amber-300">
-                            Demo
-                          </span>
-                        )}
                       </div>
                     </td>
 
@@ -333,7 +275,7 @@ export function HistoryPage() {
         )}
 
         {/* Pagination nav */}
-        {remoteData?.next_cursor && (
+        {(remoteData?.next_cursor || page > 0) && (
           <div className="mt-5 pt-3 border-t border-[#E2D9CF] dark:border-[#382E26] flex items-center justify-between text-xs">
             <button
               type="button"

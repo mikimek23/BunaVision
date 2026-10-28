@@ -46,10 +46,7 @@ export function normalizeError(error: unknown): ApiError {
     const axiosError = error as AxiosError
 
     // Timeout check
-    if (
-      axiosError.code === 'ECONNABORTED' ||
-      axiosError.message.toLowerCase().includes('timeout')
-    ) {
+    if (axiosError.code === 'ECONNABORTED' || axiosError.message.toLowerCase().includes('timeout')) {
       return new ApiError({
         code: 'TIMEOUT',
         message: 'The request took longer than expected and timed out.',
@@ -69,53 +66,121 @@ export function normalizeError(error: unknown): ApiError {
     const status = axiosError.response.status
     const responseData = axiosError.response.data
 
-    // Try parsing structured ApiErrorBody from backend: { error: { code, message, details } }
+    // 1. Try parsing structured ApiErrorBody from backend: { error: { code, message, details } }
     const parsedBody = apiErrorBodySchema.safeParse(responseData)
     if (parsedBody.success) {
       return new ApiError({
-        code: parsedBody.data.error.code,
+        code: parsedBody.data.error.code as ErrorCode,
         message: parsedBody.data.error.message,
         httpStatus: status,
         details: parsedBody.data.error.details,
       })
     }
 
-    // If backend returns a raw error object with code & message
+    // 2. If response has an unparsed error object
     if (
       typeof responseData === 'object' &&
       responseData !== null &&
-      'code' in responseData &&
-      typeof (responseData as { code: unknown }).code === 'string'
+      'error' in responseData &&
+      typeof (responseData as Record<string, unknown>).error === 'object' &&
+      (responseData as Record<string, unknown>).error !== null
     ) {
-      const codeCandidate = (responseData as { code: string }).code as ErrorCode
-      const messageCandidate =
-        'message' in responseData &&
-        typeof (responseData as { message: unknown }).message === 'string'
-          ? (responseData as { message: string }).message
+      const bErr = (responseData as Record<string, unknown>).error as Record<string, unknown>
+      const message =
+        typeof bErr.message === 'string' && bErr.message.trim()
+          ? bErr.message.trim()
           : axiosError.message
+      const code =
+        typeof bErr.code === 'string' ? (bErr.code as ErrorCode) : 'INTERNAL_ERROR'
 
       return new ApiError({
-        code: codeCandidate,
-        message: messageCandidate,
+        code,
+        message,
         httpStatus: status,
-        details: responseData,
+        details: bErr.details,
       })
     }
 
-    // Map common HTTP status codes
+    // 3. FastAPI / DRF detail field: { detail: "..." }
+    if (
+      typeof responseData === 'object' &&
+      responseData !== null &&
+      'detail' in responseData
+    ) {
+      const detail = (responseData as Record<string, unknown>).detail
+      let message = ''
+      if (typeof detail === 'string') {
+        message = detail
+      } else if (Array.isArray(detail)) {
+        message = detail.map((d: unknown) => (typeof d === 'object' && d !== null && 'msg' in d ? String((d as { msg: unknown }).msg) : String(d))).join('; ')
+      } else if (typeof detail === 'object' && detail !== null) {
+        message = Object.entries(detail).map(([k, v]) => `${k}: ${v}`).join('; ')
+      }
+
+      if (message) {
+        return new ApiError({
+          code: status === 401 ? 'INVALID_CREDENTIALS' : 'INVALID_REQUEST',
+          message,
+          httpStatus: status,
+          details: responseData,
+        })
+      }
+    }
+
+    // 4. Raw message field: { message: "..." }
+    if (
+      typeof responseData === 'object' &&
+      responseData !== null &&
+      'message' in responseData
+    ) {
+      const rawMessage = (responseData as Record<string, unknown>).message
+      if (typeof rawMessage === 'string' && rawMessage.trim()) {
+        return new ApiError({
+          code: 'INTERNAL_ERROR',
+          message: rawMessage.trim(),
+          httpStatus: status,
+          details: responseData,
+        })
+      }
+    }
+
+    // 5. Map common HTTP status codes
     switch (status) {
       case 404:
         return new ApiError({
           code: 'ASSESSMENT_NOT_FOUND',
-          message: 'The requested assessment could not be found.',
+          message: 'The requested resource could not be found.',
           httpStatus: 404,
         })
       case 401:
+        return new ApiError({
+          code: 'INVALID_CREDENTIALS',
+          message: 'Incorrect email or password.',
+          httpStatus: 401,
+        })
       case 403:
         return new ApiError({
-          code: 'UNAUTHORIZED',
-          message: 'You are not authorized to perform this action.',
-          httpStatus: status,
+          code: 'FORBIDDEN',
+          message: 'You do not have permission to perform this action.',
+          httpStatus: 403,
+        })
+      case 409:
+        return new ApiError({
+          code: 'EMAIL_ALREADY_REGISTERED',
+          message: 'An account with this email already exists.',
+          httpStatus: 409,
+        })
+      case 413:
+        return new ApiError({
+          code: 'IMAGE_TOO_LARGE',
+          message: 'This image is larger than the maximum allowed size (10 MB).',
+          httpStatus: 413,
+        })
+      case 415:
+        return new ApiError({
+          code: 'UNSUPPORTED_FORMAT',
+          message: 'Unsupported image format. Please upload a JPEG, PNG, or WEBP photo.',
+          httpStatus: 415,
         })
       case 429:
         return new ApiError({
@@ -126,7 +191,7 @@ export function normalizeError(error: unknown): ApiError {
       case 400:
       case 422:
         return new ApiError({
-          code: 'INVALID_IMAGE',
+          code: 'INVALID_REQUEST',
           message: 'The submitted image could not be processed.',
           httpStatus: status,
           details: responseData,
@@ -190,6 +255,16 @@ export const rawAxiosClient: AxiosInstance = axios.create({
   headers: {
     Accept: 'application/json',
   },
+})
+
+rawAxiosClient.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('bv_token')
+    if (token && !token.startsWith('demo_token_') && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+  }
+  return config
 })
 
 export interface RequestOptions<T> extends AxiosRequestConfig {

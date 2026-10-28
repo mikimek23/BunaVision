@@ -21,6 +21,7 @@ import {
   type AdminLimitsResponse,
   type AdminAssessmentItem,
 } from '../../services/adminService'
+import { extractApiErrorMessage } from '../../utils/errorMessages'
 
 export function AdminDashboard() {
   const { theme } = useTheme()
@@ -51,14 +52,27 @@ export function AdminDashboard() {
     setErrorMessage(null)
 
     try {
+      let loadError: unknown = null
       const [overviewData, versionsData, limitsData, attemptsData] = await Promise.all([
-        fetchAdminOverview(windowHours, authToken).catch(() => null),
-        fetchAdminModelVersions(authToken).catch(() => ({ versions: [] })),
-        fetchAdminLimits(authToken).catch(() => null),
+        fetchAdminOverview(windowHours, authToken).catch((err) => {
+          loadError = err
+          return null
+        }),
+        fetchAdminModelVersions(authToken).catch((err) => {
+          loadError = err
+          return { versions: [] }
+        }),
+        fetchAdminLimits(authToken).catch((err) => {
+          loadError = err
+          return null
+        }),
         fetchAdminAssessments(authToken, {
           status: statusFilter === 'all' ? undefined : statusFilter,
           limit: 25,
-        }).catch(() => ({ items: [], next_cursor: null })),
+        }).catch((err) => {
+          loadError = err
+          return { items: [], next_cursor: null }
+        }),
       ])
 
       if (overviewData) setOverview(overviewData)
@@ -66,79 +80,14 @@ export function AdminDashboard() {
       if (limitsData) setLimits(limitsData)
       if (attemptsData) setAttempts(attemptsData.items || [])
 
-      if (authToken.startsWith('demo_token_')) {
-        if (!overviewData) {
-          setOverview({
-            since: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-            window_hours: 24,
-            outcomes: [
-              { status: 'completed', error_code: null, count: 142 },
-              { status: 'failed', error_code: 'IMAGE_NOT_COFFEE', count: 4 },
-              { status: 'failed', error_code: 'INFERENCE_TIMEOUT', count: 2 },
-            ],
-          })
-        }
-        if (!versionsData?.versions?.length) {
-          setModelVersions([
-            {
-              model_version: 'YOLOv8n-Coffee-ONNX-v1.2',
-              validator_version: 'CoffeeValidator-v1.0',
-              assessments: 348,
-              first_seen: '2026-10-01T00:00:00Z',
-              last_seen: new Date().toISOString(),
-            },
-          ])
-        }
-        if (!limitsData) {
-          setLimits({
-            max_image_bytes: 15728640,
-            max_image_pixels: 25000000,
-            min_image_side_px: 512,
-            max_assessments_per_user_per_hour: 60,
-            max_concurrent_assessments: 10,
-            vision_timeout_s: 30,
-            gemini_timeout_s: 15,
-            image_url_ttl_s: 3600,
-            retain_original_image: true,
-          })
-        }
-        if (!attemptsData?.items?.length) {
-          setAttempts([
-            {
-              assessment_id: 'BV-DEMO-2026-001',
-              owner_id: 'usr_demo_producer_01',
-              status: 'completed',
-              created_at: new Date(Date.now() - 3600 * 1000 * 3).toISOString(),
-              processing_time_ms: 1240,
-              model_version: 'YOLOv8n-Coffee-ONNX-v1.2',
-              detection_count: 4,
-            },
-            {
-              assessment_id: 'BV-DEMO-2026-002',
-              owner_id: 'usr_demo_producer_01',
-              status: 'completed',
-              created_at: new Date(Date.now() - 3600 * 1000 * 24).toISOString(),
-              processing_time_ms: 1110,
-              model_version: 'YOLOv8n-Coffee-ONNX-v1.2',
-              detection_count: 6,
-            },
-            {
-              assessment_id: 'BV-DEMO-2026-003',
-              owner_id: 'usr_demo_producer_01',
-              status: 'completed',
-              created_at: new Date(Date.now() - 3600 * 1000 * 48).toISOString(),
-              processing_time_ms: 980,
-              model_version: 'YOLOv8n-Coffee-ONNX-v1.2',
-              detection_count: 1,
-            },
-          ])
-        }
+      if (loadError && !overviewData && !limitsData && attemptsData?.items?.length === 0) {
+        setErrorMessage(
+          extractApiErrorMessage(loadError, 'Failed to load administrator telemetry data from backend.'),
+        )
       }
     } catch (err: unknown) {
       setErrorMessage(
-        err instanceof Error
-          ? err.message
-          : 'Failed to load administrator telemetry data from backend.',
+        extractApiErrorMessage(err, 'Failed to load administrator telemetry data from backend.'),
       )
     } finally {
       setIsLoading(false)
@@ -155,27 +104,20 @@ export function AdminDashboard() {
     setReloadSuccess(null)
     setErrorMessage(null)
 
-    if (authToken.startsWith('demo_token_')) {
-      setTimeout(() => {
-        setReloadSuccess('Model successfully reloaded (Engine: ONNXRuntime-DirectML-Demo)')
-        setIsReloadingModel(false)
-        setTimeout(() => setReloadSuccess(null), 5000)
-      }, 900)
-      return
-    }
-
     try {
       const res = await reloadVisionModel(authToken)
       setReloadSuccess(`Model successfully reloaded (Engine: ${res.engine})`)
       setTimeout(() => setReloadSuccess(null), 5000)
     } catch (err: unknown) {
       setErrorMessage(
-        err instanceof Error ? err.message : 'Vision model reload request failed.',
+        extractApiErrorMessage(err, 'Vision model reload request failed.'),
       )
     } finally {
       setIsReloadingModel(false)
     }
   }
+
+
 
   // Calculate overview totals
   const totalCompleted =
@@ -335,9 +277,6 @@ export function AdminDashboard() {
               Vision & Validator Model Versions
             </h2>
           </div>
-          <span className="text-xs font-semibold text-[#44403C] dark:text-[#D6D3D1]">
-            From GET /admin/model-versions
-          </span>
         </div>
 
         {modelVersions.length === 0 ? (
@@ -392,9 +331,6 @@ export function AdminDashboard() {
                 Enforced Service Limits
               </h2>
             </div>
-            <span className="text-xs font-semibold text-[#44403C] dark:text-[#D6D3D1]">
-              From GET /admin/limits
-            </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
@@ -444,9 +380,6 @@ export function AdminDashboard() {
             <h2 className="text-lg font-bold font-serif text-[#382416] dark:text-[#F9F7F2]">
               Global User Attempts Log
             </h2>
-            <p className="text-xs font-medium text-[#44403C] dark:text-[#D6D3D1] mt-0.5">
-              Live audit trail of all users' sample evaluations from GET /admin/assessments.
-            </p>
           </div>
 
           <div className="flex items-center space-x-2">

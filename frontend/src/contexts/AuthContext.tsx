@@ -8,7 +8,8 @@ import {
 } from 'react'
 import type { UserOut } from '../types/auth'
 import { loginUser, registerUser, fetchCurrentUser } from '../services/authService'
-import { DEMO_USER, DEMO_ADMIN, loadDemoData } from '../services/demoService'
+import { DEMO_USER, DEMO_ADMIN } from '../services/demoService'
+import { extractApiErrorMessage } from '../utils/errorMessages'
 
 interface AuthContextValue {
   authToken: string | null
@@ -45,6 +46,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   // Validate stored token on mount
   useEffect(() => {
+    // Purge any legacy demo data from browser storage
+    localStorage.removeItem('bv_demo_assessments_store')
+
     const token = localStorage.getItem('bv_token')
     if (!token) {
       setAuthLoading(false)
@@ -93,9 +97,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setAuthToken(token)
       const user = await fetchCurrentUser(token)
       setCurrentUser(user)
-    } catch {
-      setLoginError('Invalid email or password. Please try again.')
-      throw new Error('Login failed')
+    } catch (err: unknown) {
+      const msg = extractApiErrorMessage(err, 'Invalid email or password. Please try again.')
+      setLoginError(msg)
+      throw new Error(msg)
     } finally {
       setLoginLoading(false)
     }
@@ -114,12 +119,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       const user = await fetchCurrentUser(token)
       setCurrentUser(user)
     } catch (err: unknown) {
-      const msg =
-        err instanceof Error && err.message.includes('409')
-          ? 'An account with this email already exists.'
-          : 'Registration failed. Please try again.'
+      const msg = extractApiErrorMessage(err, 'Registration failed. Please try again.')
       setRegisterError(msg)
-      throw new Error('Register failed')
+      throw new Error(msg)
     } finally {
       setRegisterLoading(false)
     }
@@ -132,9 +134,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
     localStorage.setItem('bv_demo_user', JSON.stringify(demoUser))
     setAuthToken(token)
     setCurrentUser(demoUser)
-    if (role === 'user') {
-      loadDemoData()
-    }
   }, [])
 
   const handleLogout = useCallback(() => {

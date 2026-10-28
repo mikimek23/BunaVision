@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { env } from '../config/env'
+import { normalizeError } from './apiClient'
 
 const API_BASE = env.apiBaseUrl
 
@@ -65,39 +66,43 @@ export async function fetchAdminOverview(
   windowHours = 24,
   token: string,
 ): Promise<AdminOverviewResponse> {
-  const response = await axios.get<AdminOverviewResponse>(
-    `${API_BASE}/admin/overview`,
-    {
+  try {
+    const response = await axios.get<AdminOverviewResponse>(`${API_BASE}/admin/overview`, {
       params: { window_hours: windowHours },
       headers: { Authorization: `Bearer ${token}` },
       timeout: 10000,
-    },
-  )
-  return response.data
+    })
+    return response.data
+  } catch (err) {
+    throw normalizeError(err)
+  }
 }
 
-export async function fetchAdminModelVersions(
-  token: string,
-): Promise<AdminModelVersionsResponse> {
-  const response = await axios.get<AdminModelVersionsResponse>(
-    `${API_BASE}/admin/model-versions`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-      timeout: 10000,
-    },
-  )
-  return response.data
+export async function fetchAdminModelVersions(token: string): Promise<AdminModelVersionsResponse> {
+  try {
+    const response = await axios.get<AdminModelVersionsResponse>(
+      `${API_BASE}/admin/model-versions`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 10000,
+      },
+    )
+    return response.data
+  } catch (err) {
+    throw normalizeError(err)
+  }
 }
 
 export async function fetchAdminLimits(token: string): Promise<AdminLimitsResponse> {
-  const response = await axios.get<AdminLimitsResponse>(
-    `${API_BASE}/admin/limits`,
-    {
+  try {
+    const response = await axios.get<AdminLimitsResponse>(`${API_BASE}/admin/limits`, {
       headers: { Authorization: `Bearer ${token}` },
       timeout: 10000,
-    },
-  )
-  return response.data
+    })
+    return response.data
+  } catch (err) {
+    throw normalizeError(err)
+  }
 }
 
 export async function fetchAdminAssessments(
@@ -117,27 +122,30 @@ export async function fetchAdminAssessments(
   if (filters?.cursor) params.cursor = filters.cursor
   if (filters?.limit) params.limit = filters.limit
 
-  const response = await axios.get<AdminAssessmentListResponse>(
-    `${API_BASE}/admin/assessments`,
-    {
+  try {
+    const response = await axios.get<AdminAssessmentListResponse>(`${API_BASE}/admin/assessments`, {
       params,
       headers: { Authorization: `Bearer ${token}` },
       timeout: 10000,
-    },
-  )
-  return response.data
+    })
+    return response.data
+  } catch (err) {
+    throw normalizeError(err)
+  }
 }
 
-export async function reloadVisionModel(
-  token: string,
-): Promise<AdminReloadModelResponse> {
-  const response = await axios.post<AdminReloadModelResponse>(
-    `${API_BASE}/admin/vision/reload-model`,
-    {},
-    {
-      headers: { Authorization: `Bearer ${token}` },
-      timeout: 25000,
-    },
-  )
-  return response.data
+export async function reloadVisionModel(token: string): Promise<AdminReloadModelResponse> {
+  try {
+    const response = await axios.post<AdminReloadModelResponse>(
+      `${API_BASE}/admin/vision/reload-model`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 25000,
+      },
+    )
+    return response.data
+  } catch (err) {
+    throw normalizeError(err)
+  }
 }
