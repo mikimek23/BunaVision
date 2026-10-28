@@ -248,6 +248,7 @@ export function AssessPage() {
                           : 'bg-[#FAF8F5] border-[#E2D9CF] text-[#44403C] hover:border-[#D1C7BD]'
                       }`}
                   >
+                  preset.name
                   </button>
                 ))}
               </div>
