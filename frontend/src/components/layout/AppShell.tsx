@@ -8,9 +8,14 @@ export function AppShell() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
-        theme === 'dark' ? 'dark bg-[#181513] text-[#F9F7F2]' : 'bg-[#FAF8F5] text-[#1C1917]'
+      className={`min-h-screen flex flex-col transition-colors duration-200 ${
+        theme === 'dark' ? 'dark' : ''
       }`}
+      style={{
+        backgroundColor: 'var(--c-ground)',
+        color: 'var(--c-text)',
+        fontFamily: 'var(--font-sans)',
+      }}
     >
       <Header />
       <main className="grow">
