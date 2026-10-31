@@ -26,13 +26,6 @@ export const PRESET_SAMPLES: PresetSample[] = [
     moisture: '11.5%',
     url: '/coffee_drying_closeup.jpg',
   },
-  {
-    id: 'preset-4',
-    name: 'sample 4',
-    lot: 'JIM-2026-045',
-    moisture: '11.1%',
-    url: '/coffee_station_landscape.jpg',
-  },
 ]
 
 // ─── Ethiopian Origins ───────────────────────────────────────────────────────
@@ -93,7 +86,7 @@ export const DEFECT_INFO_CARDS: DefectInfoCard[] = [
   {
     key: 'full_black',
     title: 'Full Black (ጥቁር ፍሬ)',
-    category: 'ECX Primary Defect',
+    category: 'Primary Defect',
     color: 'bg-red-500',
     description:
       'Immature or insect-punctured raw green cherries fermented excessively before or during harvesting.',
@@ -104,7 +97,7 @@ export const DEFECT_INFO_CARDS: DefectInfoCard[] = [
   {
     key: 'partial_black',
     title: 'Partial Black (ከፊል ጥቁር)',
-    category: 'ECX Secondary Defect',
+    category: 'Secondary Defect',
     color: 'bg-amber-500',
     description:
       'Uneven moisture loss or localized fermentation during channel washing or early drying of raw green beans.',
@@ -114,7 +107,7 @@ export const DEFECT_INFO_CARDS: DefectInfoCard[] = [
   {
     key: 'parchment_husk',
     title: 'Husk / Parchment (የቆዳ ቅሪት)',
-    category: 'ECX Secondary Defect',
+    category: 'Secondary Defect',
     color: 'bg-amber-400',
     description:
       'Dry cherry pulp or endocarp shell retained due to tight huller clearance on unroasted raw beans.',

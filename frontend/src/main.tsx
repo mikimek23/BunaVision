@@ -15,6 +15,16 @@ async function enableMocking() {
   if (env.useMocks && import.meta.env.DEV) {
     const { worker } = await import('./mocks/browser')
     await worker.start()
+  } else if ('serviceWorker' in navigator) {
+    // Unregister any active mock service workers to ensure live network requests hit the real backend
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      for (const registration of registrations) {
+        await registration.unregister()
+      }
+    } catch {
+      // Ignore if unregistration is unavailable
+    }
   }
 }
 

@@ -28,10 +28,6 @@ export const env = {
   pollIntervalMs: parseIntegerEnv('VITE_POLL_INTERVAL_MS', 2000),
   requestTimeoutMs: parseIntegerEnv('VITE_REQUEST_TIMEOUT_MS', 60_000),
   useMocks: parseBooleanEnv('VITE_USE_MOCKS', false),
-  demoUserEmail: (import.meta.env.VITE_DEMO_USER_EMAIL as string) || 'user@gmial.com',
-  demoUserPassword: (import.meta.env.VITE_DEMO_USER_PASSWORD as string) || 'User@12345',
-  demoAdminEmail: (import.meta.env.VITE_DEMO_ADMIN_EMAIL as string) || 'admin@gmail.com',
-  demoAdminPassword: (import.meta.env.VITE_DEMO_ADMIN_PASSWORD as string) || 'abcd1234',
 } as const
 
 export type EnvConfig = typeof env
