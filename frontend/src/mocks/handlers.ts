@@ -7,6 +7,8 @@ import {
   mockEmptyHistory,
   mockPaginatedHistoryPage1,
   mockPaginatedHistoryPage2,
+  mockUser,
+  mockAdmin,
 } from './fixtures'
 import type { Assessment } from '../types/assessment'
 
@@ -97,6 +99,38 @@ export const handlers = [
     if (isEmpty) return HttpResponse.json(mockEmptyHistory)
     if (page === 2) return HttpResponse.json(mockPaginatedHistoryPage2)
     return HttpResponse.json(mockPaginatedHistoryPage1)
+  }),
+
+  // POST /api/v1/auth/login — Mock authentication
+  http.post('*/api/v1/auth/login', async ({ request }) => {
+    const body = (await request.json().catch(() => ({}))) as { email?: string; password?: string }
+    const isAdmin = body.email?.includes('admin')
+    const token = isAdmin ? `demo_token_admin_${Date.now()}` : `demo_token_user_${Date.now()}`
+    return HttpResponse.json({
+      access_token: token,
+      token_type: 'bearer',
+    })
+  }),
+
+  // GET /api/v1/auth/me — Current authenticated user profile
+  http.get('*/api/v1/auth/me', ({ request }) => {
+    const authHeader = request.headers.get('Authorization') || ''
+    const isAdmin = authHeader.includes('admin')
+    return HttpResponse.json(isAdmin ? mockAdmin : mockUser)
+  }),
+
+  // POST /api/v1/auth/register — Mock registration
+  http.post('*/api/v1/auth/register', async ({ request }) => {
+    const body = (await request.json().catch(() => ({}))) as { email?: string; password?: string }
+    return HttpResponse.json(
+      {
+        user_id: `usr_demo_${Date.now()}`,
+        email: body.email || 'user@bunavision.et',
+        role: 'user',
+        created_at: new Date().toISOString(),
+      },
+      { status: 201 },
+    )
   }),
 ]
 

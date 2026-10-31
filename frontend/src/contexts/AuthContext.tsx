@@ -8,7 +8,6 @@ import {
 } from 'react'
 import type { UserOut } from '../types/auth'
 import { loginUser, registerUser, fetchCurrentUser } from '../services/authService'
-import { DEMO_USER, DEMO_ADMIN } from '../services/demoService'
 import { extractApiErrorMessage } from '../utils/errorMessages'
 
 interface AuthContextValue {
@@ -19,7 +18,6 @@ interface AuthContextValue {
   handleLogin: (email: string, password: string) => Promise<void>
   handleRegister: (email: string, password: string) => Promise<void>
   handleLogout: () => void
-  loginAsDemo: (role: 'user' | 'admin') => void
 
   loginError: string | null
   loginLoading: boolean
@@ -44,10 +42,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [registerError, setRegisterError] = useState<string | null>(null)
   const [registerLoading, setRegisterLoading] = useState(false)
 
-  // Validate stored token on mount
+  // Validate stored token on mount with the backend service
   useEffect(() => {
-    // Purge any legacy demo data from browser storage
+    // Purge any residual demo keys from localStorage
     localStorage.removeItem('bv_demo_assessments_store')
+    localStorage.removeItem('bv_demo_user')
 
     const token = localStorage.getItem('bv_token')
     if (!token) {
@@ -55,21 +54,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
       return
     }
 
+    // Never accept synthetic tokens; require valid backend JWT
     if (token.startsWith('demo_token_')) {
-      const storedDemo = localStorage.getItem('bv_demo_user')
-      if (storedDemo) {
-        try {
-          setCurrentUser(JSON.parse(storedDemo))
-          setAuthToken(token)
-          setAuthLoading(false)
-          return
-        } catch {
-          // fall through
-        }
-      }
-      const role = token.includes('admin') ? 'admin' : 'user'
-      setCurrentUser(role === 'admin' ? DEMO_ADMIN : DEMO_USER)
-      setAuthToken(token)
+      localStorage.removeItem('bv_token')
+      setAuthToken(null)
+      setCurrentUser(null)
       setAuthLoading(false)
       return
     }
@@ -111,7 +100,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setRegisterError(null)
     try {
       await registerUser(email, password)
-      // Auto-login after registration
+      // Auto-login after registration with the backend
       const tokenData = await loginUser(email, password)
       const token = tokenData.access_token
       localStorage.setItem('bv_token', token)
@@ -125,15 +114,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
     } finally {
       setRegisterLoading(false)
     }
-  }, [])
-
-  const loginAsDemo = useCallback((role: 'user' | 'admin') => {
-    const demoUser = role === 'admin' ? DEMO_ADMIN : DEMO_USER
-    const token = `demo_token_${role}_${Date.now()}`
-    localStorage.setItem('bv_token', token)
-    localStorage.setItem('bv_demo_user', JSON.stringify(demoUser))
-    setAuthToken(token)
-    setCurrentUser(demoUser)
   }, [])
 
   const handleLogout = useCallback(() => {
@@ -155,7 +135,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
         handleLogin,
         handleRegister,
         handleLogout,
-        loginAsDemo,
         loginError,
         loginLoading,
         registerError,

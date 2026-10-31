@@ -1,37 +1,15 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router'
-import {
-  ArrowLeft,
-  Mail,
-  Lock,
-  RefreshCw,
-  LogIn,
-  AlertTriangle,
-  User,
-  Shield,
-} from 'lucide-react'
-import { useTheme } from '../../contexts/ThemeContext'
+import { ArrowLeft, Mail, Lock, RefreshCw, LogIn, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
-import { env } from '../../config/env'
 
 export function LoginPage() {
-  const { theme } = useTheme()
   const { handleLogin, loginError, loginLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-
-  const card = `rounded-2xl border transition-all ${theme === 'dark'
-      ? 'bg-[#231F1C] border-[#382E26] shadow-sm'
-      : 'bg-white border-[#E2D9CF] shadow-xs'
-    }`
-
-  const inputCls = `w-full px-3.5 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-[#8BA470] transition-colors ${theme === 'dark'
-      ? 'bg-[#181513] border-[#382E26] text-[#F9F7F2]'
-      : 'bg-[#FAF8F5] border-[#E2D9CF] text-[#1C1917]'
-    }`
 
   const redirectPath = (location.state as { from?: string })?.from || '/assess'
 
@@ -44,57 +22,54 @@ export function LoginPage() {
       navigate(redirectPath)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch {
-      // Error is handled by context
+      // Error is surfaced by context
     }
   }
 
-  const handleDemoSignIn = async (role: 'user' | 'admin') => {
-    const targetEmail = role === 'admin' ? env.demoAdminEmail : env.demoUserEmail
-    const targetPassword = role === 'admin' ? env.demoAdminPassword : env.demoUserPassword
-    setEmail(targetEmail)
-    setPassword(targetPassword)
-    try {
-      await handleLogin(targetEmail, targetPassword)
-      setEmail('')
-      setPassword('')
-      navigate(role === 'admin' ? '/admin' : redirectPath)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    } catch {
-      // Error is handled by context
-    }
-  }
+  const inputCls = `w-full px-3.5 py-2.5 rounded-lg text-sm border focus:outline-none transition-colors`
 
   return (
-    <div className="max-w-md mx-auto px-4 py-16 space-y-8 animate-fade-in-up">
+    <div className="max-w-sm mx-auto px-4 py-16 space-y-8">
+
       <Link
         to="/"
-        className="inline-flex items-center space-x-1.5 text-xs font-bold text-[#44403C] dark:text-[#D6D3D1] hover:text-[#1C1917] transition-colors no-underline"
+        className="inline-flex items-center gap-1.5 text-xs font-medium no-underline"
+        style={{ color: 'var(--c-text-2)' }}
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>Back to Home</span>
+        Back to home
       </Link>
 
-      <div className="text-center space-y-3">
-        <img
-          src="/bunavision-favicon.ico"
-          alt="BunaVision Logo"
-          className="w-16 h-16 rounded-2xl mx-auto shadow-md object-cover border border-[#E2D9CF] dark:border-[#382E26]"
-        />
-        <div>
-          <h1 className="text-2xl font-bold font-serif text-[#382416] dark:text-[#F9F7F2]">
-            Welcome back
-          </h1>
-          <p className="text-sm font-medium text-[#44403C] dark:text-[#D6D3D1] mt-1">
-            Sign in to your BunaVision account
-          </p>
-        </div>
+      {/* Heading — no logo duplication */}
+      <div className="space-y-1">
+        <h1
+          className="font-display text-3xl"
+          style={{ color: 'var(--c-text)' }}
+        >
+          Sign in
+        </h1>
+        <p className="text-sm" style={{ color: 'var(--c-text-2)' }}>
+          Access your BunaVision assessment workspace.
+        </p>
       </div>
 
-      <div className={`p-6 sm:p-8 ${card} space-y-5`}>
+      <div
+        className="p-6 rounded-xl border space-y-5"
+        style={{
+          backgroundColor: 'var(--c-surface)',
+          borderColor: 'var(--c-border)',
+        }}
+      >
         {loginError && (
-          <div className="p-3.5 rounded-xl border border-red-300 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 flex items-start gap-2.5">
-            <AlertTriangle className="w-4 h-4 text-red-700 dark:text-red-400 shrink-0 mt-0.5" />
-            <p className="text-xs font-semibold text-red-900 dark:text-red-300">
+          <div
+            className="p-3.5 rounded-lg border flex items-start gap-2.5"
+            style={{
+              backgroundColor: 'var(--c-defect-tint)',
+              borderColor: 'var(--c-defect-border)',
+            }}
+          >
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--c-defect)' }} />
+            <p className="text-xs" style={{ color: 'var(--c-defect)' }}>
               {loginError}
             </p>
           </div>
@@ -108,11 +83,14 @@ export function LoginPage() {
           className="space-y-4"
         >
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-[#44403C] dark:text-[#D6D3D1]">
-              Email Address
+            <label className="text-xs font-medium" style={{ color: 'var(--c-text-2)' }}>
+              Email
             </label>
             <div className="relative">
-              <Mail className="w-4 h-4 absolute left-3.5 top-3.5 text-[#44403C] dark:text-[#D6D3D1]" />
+              <Mail
+                className="w-4 h-4 absolute left-3.5 top-3"
+                style={{ color: 'var(--c-text-3)' }}
+              />
               <input
                 type="email"
                 required
@@ -120,16 +98,24 @@ export function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={`pl-10 ${inputCls}`}
+                style={{
+                  backgroundColor: 'var(--c-surface-2)',
+                  borderColor: 'var(--c-border)',
+                  color: 'var(--c-text)',
+                }}
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-[#44403C] dark:text-[#D6D3D1]">
+            <label className="text-xs font-medium" style={{ color: 'var(--c-text-2)' }}>
               Password
             </label>
             <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3.5 top-3.5 text-[#44403C] dark:text-[#D6D3D1]" />
+              <Lock
+                className="w-4 h-4 absolute left-3.5 top-3"
+                style={{ color: 'var(--c-text-3)' }}
+              />
               <input
                 type="password"
                 required
@@ -137,6 +123,11 @@ export function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={`pl-10 ${inputCls}`}
+                style={{
+                  backgroundColor: 'var(--c-surface-2)',
+                  borderColor: 'var(--c-border)',
+                  color: 'var(--c-text)',
+                }}
               />
             </div>
           </div>
@@ -144,58 +135,29 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={loginLoading}
-            className="w-full py-3 rounded-xl bg-[#593D2B] hover:bg-[#483020] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
+            className="btn-primary w-full justify-center py-3"
           >
             {loginLoading ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
               <>
                 <LogIn className="w-4 h-4" />
-                <span>Sign In to BunaVision</span>
+                Sign in
               </>
             )}
           </button>
         </form>
 
-        <div className="pt-2 text-center text-xs font-medium text-[#44403C] dark:text-[#D6D3D1]">
-          Don't have an account yet?{' '}
+        <p className="text-center text-xs" style={{ color: 'var(--c-text-2)' }}>
+          No account?{' '}
           <Link
             to="/register"
-            className="font-bold text-[#593D2B] dark:text-[#A7BF8C] hover:underline"
+            className="font-semibold hover:underline"
+            style={{ color: 'var(--c-bean)' }}
           >
-            Create account
+            Create one
           </Link>
-        </div>
-
-        {/* Demo Users Section */}
-        <div className="pt-4 border-t border-[#E2D9CF] dark:border-[#382E26] space-y-3">
-          <div className="flex items-center gap-1.5 justify-center text-xs font-bold text-[#593D2B] dark:text-[#A7BF8C] uppercase tracking-wider">
-            <span>Demo Accounts</span>
-          </div>
-          <p className="text-xs text-center text-[#44403C] dark:text-[#D6D3D1]">
-            Quick sign-in using demo credentials.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-            <button
-              type="button"
-              disabled={loginLoading}
-              onClick={() => handleDemoSignIn('user')}
-              className="px-3 py-2.5 rounded-xl border border-[#8BA470]/40 bg-[#8BA470]/10 hover:bg-[#8BA470]/20 text-[#3A5228] dark:text-[#B5CF97] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
-            >
-              <User className="w-3.5 h-3.5" />
-              <span>Demo User</span>
-            </button>
-            <button
-              type="button"
-              disabled={loginLoading}
-              onClick={() => handleDemoSignIn('admin')}
-              className="px-3 py-2.5 rounded-xl border border-[#593D2B]/30 bg-[#593D2B]/10 hover:bg-[#593D2B]/20 text-[#382416] dark:text-[#D6D3D1] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
-            >
-              <Shield className="w-3.5 h-3.5 text-[#593D2B] dark:text-[#8BA470]" />
-              <span>Demo Admin</span>
-            </button>
-          </div>
-        </div>
+        </p>
       </div>
     </div>
   )

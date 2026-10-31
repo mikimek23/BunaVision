@@ -87,3 +87,17 @@ export const mockPaginatedHistoryPage2: AssessmentListResponse = {
   items: [mockFailedAssessment],
   next_cursor: null,
 }
+
+export const mockUser = {
+  user_id: 'usr_mock_01',
+  email: 'mock.user@bunavision.et',
+  role: 'user' as const,
+  created_at: '2026-10-20T10:00:00Z',
+}
+
+export const mockAdmin = {
+  user_id: 'usr_mock_admin_01',
+  email: 'mock.admin@bunavision.et',
+  role: 'admin' as const,
+  created_at: '2026-10-18T08:30:00Z',
+}

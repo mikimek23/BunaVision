@@ -32,7 +32,7 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
         if (videoRef.current) videoRef.current.srcObject = stream
       } catch {
         setCameraError(
-          'Unable to access camera. Please allow camera permissions or select a photo file.',
+          'Unable to access camera. Please allow camera permissions or upload an image file.',
         )
       }
     },
@@ -64,7 +64,7 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
       canvas.toBlob(
         (blob) => {
           if (blob) {
-            const file = new File([blob], `camera_sample_${Date.now()}.jpg`, {
+            const file = new File([blob], `coffee_sample_${Date.now()}.jpg`, {
               type: 'image/jpeg',
             })
             stopStream()
@@ -84,16 +84,26 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-[#231F1C] border border-[#382E26] rounded-3xl max-w-lg w-full p-6 text-[#F9F7F2] space-y-4 shadow-2xl relative">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Camera className="w-5 h-5 text-[#8BA470]" />
-            <h3 className="font-bold text-lg font-serif">Capture Raw Green Bean Sample</h3>
+      <div className="bg-[#102C22] border border-white/15 rounded-2xl max-w-lg w-full p-6 text-white space-y-4 shadow-2xl relative">
+        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-[#D5A64A]">
+              <Camera className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base font-display text-[#F7F4EC]">
+                Capture Coffee Sample
+              </h3>
+              <p className="text-[11px] text-[#A4B5AC]">
+                Position camera directly above green beans in a single flat layer
+              </p>
+            </div>
           </div>
           <button
             type="button"
             onClick={handleClose}
-            className="p-1.5 rounded-lg hover:bg-stone-800 text-stone-400 hover:text-white transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-white/10 text-stone-400 hover:text-white transition-colors cursor-pointer"
+            aria-label="Close camera"
           >
             <X className="w-5 h-5" />
           </button>
@@ -105,13 +115,13 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
             <button
               type="button"
               onClick={() => startCamera(cameraFacing)}
-              className="px-3 py-1.5 rounded-lg bg-red-600 text-white font-semibold cursor-pointer"
+              className="px-3.5 py-1.5 rounded-lg bg-[#A4483E] text-white text-xs font-semibold cursor-pointer hover:bg-red-700 transition-colors"
             >
               Retry Camera
             </button>
           </div>
         ) : (
-          <div className="relative rounded-2xl overflow-hidden aspect-4/3 bg-black border border-stone-800">
+          <div className="relative rounded-xl overflow-hidden aspect-4/3 bg-black border border-white/10">
             <video
               ref={videoRef}
               autoPlay
@@ -120,8 +130,8 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-4 border border-dashed border-white/40 rounded-xl pointer-events-none flex items-center justify-center">
-              <span className="text-xs uppercase font-bold text-white bg-black/70 px-3 py-1 rounded-md tracking-wider">
-                Spread raw green beans flat in tray
+              <span className="text-[11px] font-semibold text-white bg-black/75 backdrop-blur-md px-3 py-1 rounded-md tracking-wide">
+                Center beans flat inside frame
               </span>
             </div>
           </div>
@@ -131,19 +141,21 @@ export function CameraModal({ onCapture, onClose }: CameraModalProps) {
           <button
             type="button"
             onClick={toggleFacing}
-            className="px-3.5 py-2 rounded-xl border border-stone-700 bg-stone-800 hover:bg-stone-700 text-xs font-semibold flex items-center space-x-1.5 cursor-pointer transition-colors"
+            className="px-3.5 py-2 rounded-lg border border-white/15 bg-white/10 hover:bg-white/15 text-xs font-semibold flex items-center space-x-1.5 cursor-pointer transition-colors text-[#F7F4EC]"
           >
-            <SwitchCamera className="w-4 h-4 text-[#8BA470]" />
-            <span>Flip Lens</span>
+            <SwitchCamera className="w-4 h-4 text-[#D5A64A]" />
+            <span>Switch Lens</span>
           </button>
+
           <button
             type="button"
             onClick={capturePhoto}
             disabled={Boolean(cameraError)}
-            className="px-6 py-2.5 rounded-xl bg-[#8BA470] hover:bg-[#78935c] text-white font-bold text-sm flex items-center space-x-2 shadow-lg hover:scale-105 transition-all cursor-pointer disabled:opacity-50"
+            className="btn-primary text-xs py-2.5 px-5 disabled:opacity-40"
+            style={{ backgroundColor: '#123C2D' }}
           >
-            <Camera className="w-4 h-4" />
-            <span>Snap Photograph</span>
+            <Camera className="w-4 h-4 text-[#D5A64A]" />
+            <span>Capture Photo</span>
           </button>
         </div>
       </div>
